@@ -1,0 +1,18 @@
+# Usar la imagen base oficial de Microsoft para .NET SDK
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build-env
+WORKDIR /app
+
+# Copiar el csproj y restaurar las dependencias
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copiar el resto de los archivos y construir la aplicación
+COPY . ./
+RUN dotnet publish -c Release -o out
+
+# Generar la imagen de runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build-env /app/out .
+ENTRYPOINT ["dotnet", "MiApiConSerilog.dll"]
+
